@@ -23,9 +23,10 @@ test("service worker caches only pinned Pyodide assets", () => {
 });
 
 test("main inline script parses as JavaScript", () => {
-  const match = html.match(/<script>([\\s\\S]*?)<\\/script>/);
-  assert.ok(match, "inline application script should exist");
-  assert.doesNotThrow(() => new Function(match[1]));
+  const start = html.indexOf("<script>");
+  const end = html.indexOf("</script>", start);
+  assert.ok(start >= 0 && end > start, "inline application script should exist");
+  assert.doesNotThrow(() => new Function(html.slice(start + 8, end)));
 });
 
 test("the old main-thread runtime loading path is gone", () => {
