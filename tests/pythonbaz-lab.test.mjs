@@ -21,6 +21,13 @@ test("service worker caches only pinned Pyodide assets", () => {
   assert.match(sw, /pythonbaz-pyodide-0\.29\.5/);
   assert.match(sw, /pyodide@0\.29\.5/);
 });
+
+test("main inline script parses as JavaScript", () => {
+  const match = html.match(/<script>([\\s\\S]*?)<\\/script>/);
+  assert.ok(match, "inline application script should exist");
+  assert.doesNotThrow(() => new Function(match[1]));
+});
+
 test("the old main-thread runtime loading path is gone", () => {
   assert.doesNotMatch(html, /window\.loadPyodide/);
   assert.doesNotMatch(html, /pyodide\.runPython\(/);
