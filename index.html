@@ -35,10 +35,45 @@ footer{text-align:center;padding:24px;color:var(--muted)}
 <section id="lessons" class="page" hidden><div class="grid"><div class="card s4"><h2>مسیر درس‌ها</h2><div class="lesson-list" id="lessonList"></div></div><div class="card s8" id="lessonDetail"><h2>از اینجا شروع کن</h2><p>یک درس را انتخاب کن تا توضیح، مثال و تمرین آن را ببینی.</p></div></div></section>
 <section id="cards" class="page" hidden><div class="card"><h2>🃏 فلش‌کارت مرور</h2><p class="muted">روی کارت کلیک کن تا پاسخ را ببینی. کارت‌هایی را که سخت‌اند برای مرور علامت بزن.</p><div class="flash" id="flash" onclick="flipCard()"><span id="cardNum">کارت ۱</span><h2 id="flashText">متغیر چیست؟</h2><small id="flashHint">برای دیدن پاسخ کلیک کن</small></div><div class="btnrow"><button class="secondary" onclick="prevCard()">قبلی</button><button class="primary" onclick="rateCard(true)">✓ بلد بودم (+۲ XP)</button><button class="secondary" onclick="rateCard(false)">↻ مرور دوباره</button><button class="secondary" onclick="nextCard()">بعدی</button></div><p id="cardStats" class="muted"></p></div></section>
 <section id="quiz" class="page" hidden><div class="card"><h2>🧠 آزمون مرحله‌ای</h2><p class="muted">هر پاسخ درست ۵ امتیاز دارد. پایان آزمون بازخورد می‌گیری.</p><div id="quizArea"></div><div class="btnrow"><button class="primary" id="nextQ" onclick="nextQuestion()">ثبت پاسخ</button><button class="secondary" onclick="restartQuiz()">شروع دوباره</button></div><div id="quizFeedback"></div></div></section>
-<section id="lab" class="page" hidden><div class="grid"><div class="card s8"><h2>💻 آزمایشگاه اجرای پایتون</h2><p class="muted">کد را ویرایش کن و اجرا بزن. بار اول برای دریافت موتور پایتون به اینترنت نیاز است.</p><textarea id="code" spellcheck="false">name = "کدنویس"
+<section id="lab" class="page" hidden><div class="grid">
+<div class="card s8">
+<h2>💻 آزمایشگاه مستقل پایتون</h2>
+<p class="muted">موتور پایتون در Worker جدا اجرا می‌شود تا کد سنگین صفحه را قفل نکند. بارگیری اولیه اینترنت می‌خواهد؛ بعد از دانلود، مرورگر می‌تواند فایل‌های موتور را cache کند.</p>
+<div class="btnrow">
+<button class="primary" id="runBtn" onclick="runCode()">▶ اجرای کد</button>
+<button class="secondary" id="stopBtn" onclick="stopCode()" disabled>■ توقف فوری</button>
+<button class="secondary" onclick="resetCode()">نمونه اولیه</button>
+<button class="secondary" onclick="retryPythonEngine()">بارگیری / اتصال دوباره</button>
+<button class="secondary" onclick="clearLabOutput()">پاک کردن خروجی</button>
+<label class="small" style="display:flex;align-items:center;gap:6px">حد زمان
+<select id="labTimeout" style="width:auto"><option value="10">۱۰ ثانیه</option><option value="15" selected>۱۵ ثانیه</option><option value="30">۳۰ ثانیه</option></select>
+</label>
+</div>
+<label class="small" for="code"><b>کد پایتون</b></label>
+<textarea id="code" spellcheck="false">name = "کدنویس"
 print("سلام", name)
 for number in range(1, 4):
-    print("مرحله", number)</textarea><div class="btnrow"><button class="primary" id="runBtn" onclick="runCode()">▶ اجرای کد</button><button class="secondary" onclick="resetCode()">نمونه اولیه</button><button class="secondary" onclick="showPage('help')">راهنمای خطاها</button></div><h3>خروجی برنامه</h3><pre id="output">خروجی اینجا نمایش داده می‌شود.</pre><p class="muted small" id="runtimeStatus">موتور پایتون هنوز بارگیری نشده است.</p></div><div class="card s4"><h2>راهنمای سریع</h2><p><code>print()</code> نمایش خروجی</p><p><code>name = "Ali"</code> ساخت متغیر</p><p><code>if</code> تصمیم‌گیری</p><p><code>for</code> تکرار</p><p><code>def</code> تعریف تابع</p><div class="success small">این محیط از Pyodide در مرورگر استفاده می‌کند. کدها به سرور اختصاصی این برنامه ارسال نمی‌شوند؛ بااین‌حال کدهای ناشناس را اجرا نکن.</div></div></div></section>
+    print("مرحله", number)</textarea>
+<label class="small" for="inputLines"><b>ورودی برنامه (برای input؛ هر پاسخ در یک خط)</b></label>
+<textarea id="inputLines" rows="3" style="min-height:80px" spellcheck="false" placeholder="مثلاً:&#10;سارا&#10;۱۶">کدنویس</textarea>
+<p class="muted small">برای کدهایی که از <code>input()</code> استفاده می‌کنند، پاسخ‌ها را پیش از اجرا اینجا وارد کن. ورودی زنده و سؤال‌به‌سؤال هنوز پشتیبانی نمی‌شود.</p>
+<h3>خروجی / خطا</h3><pre id="output">خروجی اینجا نمایش داده می‌شود.</pre>
+<p class="muted small" id="runtimeStatus" role="status">موتور پایتون هنوز بارگیری نشده است. اولین اجرای آزمایشگاه به اینترنت نیاز دارد.</p>
+</div>
+<div class="card s4">
+<h2>راهنمای آزمایشگاه</h2>
+<p><code>print()</code> نمایش خروجی</p><p><code>input()</code> دریافت پاسخ از بخش ورودی‌ها</p><p><code>if</code> تصمیم‌گیری</p><p><code>for</code> تکرار</p><p><code>def</code> تعریف تابع</p>
+<div class="success small">کدها در مرورگر شما اجرا می‌شوند و به سرور برنامه ارسال نمی‌شوند. از اجرای کدهای ناشناس خودداری کن.</div>
+<h3>چه تغییر کرده؟</h3>
+<ul class="small">
+<li>اجرای کد در Web Worker مستقل.</li>
+<li>توقف فوری و محدودیت زمان اجرا.</li>
+<li>دو مسیر CDN برای بارگیری Pyodide.</li>
+<li>ذخیره محلی کد و ورودی‌ها.</li>
+<li>Cache مرورگر برای فایل‌های runtime.</li>
+</ul>
+<p class="muted small">این محیط CPython کامل نیست؛ دسترسی سیستم‌عامل و بعضی پکیج‌های native محدودند.</p>
+</div></div></section>
 <section id="projects" class="page" hidden><div class="card"><h2>🎮 استودیوی بازی‌سازی</h2><p>پروژه‌ها از ساده به دشوار مرتب شده‌اند. نمونه کد را به آزمایشگاه بفرست، تغییرش بده و اجرا کن.</p><div class="grid" id="projectGrid"></div></div></section>
 <section id="help" class="page" hidden><div class="grid"><div class="card s6"><h2>🛠️ راهنمای فارسی خطاها</h2><p>نوع خطا را انتخاب کن تا معنی و راه‌حل‌های معمول را ببینی.</p><select id="errorSelect" onchange="showError()"><option value="SyntaxError">SyntaxError — اشتباه در نوشتار</option><option value="NameError">NameError — نام ناشناخته</option><option value="TypeError">TypeError — نوع داده ناسازگار</option><option value="IndentationError">IndentationError — تورفتگی</option><option value="ZeroDivisionError">ZeroDivisionError — تقسیم بر صفر</option><option value="IndexError">IndexError — اندیس خارج از محدوده</option><option value="KeyError">KeyError — کلید پیدا نشد</option></select><div id="errorInfo" class="success" style="margin-top:12px"></div></div><div class="card s6"><h2>عیب‌یابی قدم‌به‌قدم</h2><ol><li>آخرین خط پیام خطا را بخوان.</li><li>شماره خط را در کد پیدا کن.</li><li>نام متغیرها، کوتیشن‌ها، پرانتزها و دونقطه را بررسی کن.</li><li>در بلوک‌های <code>if</code> و <code>for</code> تورفتگی یکسان داشته باش.</li><li>فقط یک تغییر انجام بده و دوباره اجرا کن.</li></ol><button class="primary" onclick="loadBrokenExample()">تمرین پیدا کردن خطا</button></div></div></section>
 <section id="badges" class="page" hidden><div class="card"><h2>🏅 کلکسیون نشان‌ها</h2><p>نشان‌ها با انجام فعالیت‌ها باز می‌شوند.</p><div id="badgeGrid" class="badge-grid"></div></div></section>
@@ -80,7 +115,7 @@ ZeroDivisionError:["تلاش برای تقسیم بر صفر انجام شده �
 IndexError:["شماره عضو درخواستی در فهرست وجود ندارد.","اندیس‌ها از صفر شروع می‌شوند؛ طول فهرست را با len() بررسی کن.","items = [\"الف\", \"ب\"]\\nprint(items[0])"],
 KeyError:["کلید موردنظر در دیکشنری پیدا نشده است.","کلیدهای موجود را بررسی کن یا از get() استفاده کن.","student = {\"name\": \"سارا\"}\\nprint(student.get(\"name\"))"]
 };
-let data=loadState(),pyodide=null,cardIndex=0,cardFlipped=false,qIndex=0,qScore=0,qAnswered=false,quizFinished=false;
+let data=loadState(),pyWorker=null,pyWorkerReady=null,pyReadyResolve=null,pyReadyReject=null,labRunBusy=false,labRunId=0,labRunTimeout=null,cardIndex=0,cardFlipped=false,qIndex=0,qScore=0,qAnswered=false,quizFinished=false;
 function fresh(){return {points:0,done:[],best:0,known:[],review:[],completedProjects:[],name:"کدنویس",avatar:"🧑‍💻",scores:[],badges:[],missionDone:[]}}
 function loadState(){try{return {...fresh(),...JSON.parse(localStorage.getItem("pythonbaz_v2")||"{}")}}catch{return fresh()}}
 function persist(){localStorage.setItem("pythonbaz_v2",JSON.stringify(data));renderStats();renderBadges();renderMissions()}
@@ -101,57 +136,109 @@ function renderQuestion(){qAnswered=false;let q=quizData[qIndex];document.getEle
 function chooseAnswer(i){if(qAnswered||quizFinished)return;qAnswered=true;let q=quizData[qIndex],ok=i===q.c;if(ok)qScore++;document.querySelectorAll(".choice").forEach((b,j)=>{b.disabled=true;if(j===q.c)b.style.background="#dff8e9";else if(j===i)b.style.background="#ffe5e1"});document.getElementById("quizFeedback").innerHTML=`<div class="${ok?"success":"error"}">${ok?"درست بود! آفرین.":"این پاسخ درست نیست."} ${q.why}</div>`}
 function nextQuestion(){if(!qAnswered){document.getElementById("quizFeedback").innerHTML='<div class="error">برای ادامه، یک پاسخ انتخاب کن.</div>';return}if(qIndex<quizData.length-1){qIndex++;renderQuestion();return}quizFinished=true;let pct=Math.round(qScore/quizData.length*100);data.best=Math.max(data.best,pct);data.points+=qScore*5;persist();document.getElementById("quizArea").innerHTML=`<h2>نتیجه: ${pct}٪</h2><p>از ${quizData.length} سؤال، ${qScore} پاسخ درست داشتی.</p><p>${pct>=85?"عالی! آماده مأموریت بعدی هستی.":pct>=55?"خوب بود؛ فلش‌کارت‌ها را مرور کن و دوباره تلاش کن.":"اشکالی ندارد؛ درس‌ها را دوباره مرور کن."}</p>`;document.getElementById("nextQ").disabled=true;document.getElementById("nextQ").textContent="آزمون تمام شد";renderScores()}
 function restartQuiz(){qIndex=0;qScore=0;quizFinished=false;renderQuestion()}
-async function runCode(){
- let out=document.getElementById("output"),status=document.getElementById("runtimeStatus"),btn=document.getElementById("runBtn");
- btn.disabled=true;out.textContent="در حال آماده‌سازی موتور پایتون...";
- try{
-   if(!pyodide){
-     const cdns=[
-       {script:"https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.js",base:"https://cdn.jsdelivr.net/pyodide/v0.27.7/full/"},
-       {script:"https://cdnjs.cloudflare.com/ajax/libs/pyodide/0.27.7/pyodide.js",base:"https://cdnjs.cloudflare.com/ajax/libs/pyodide/0.27.7/"}
-     ];
-     let lastError=null;
-     for(const cdn of cdns){
-       try{
-         status.textContent="در حال اتصال به موتور پایتون...";
-         if(!window.loadPyodide){
-           await new Promise((resolve,reject)=>{
-             const s=document.createElement("script");
-             s.src=cdn.script;s.onload=resolve;s.onerror=()=>{s.remove();reject(new Error("فایل اصلی موتور از این سرور دریافت نشد."))};
-             document.head.appendChild(s);
-           });
-         }
-         pyodide=await window.loadPyodide({indexURL:cdn.base});
-         status.textContent="موتور پایتون آماده است.";
-         break;
-       }catch(e){
-         lastError=e;pyodide=null;
-         window.loadPyodide=undefined;
-       }
-     }
-     if(!pyodide)throw new Error("اتصال به هر دو سرور موتور پایتون ناموفق بود. اتصال اینترنت یا محدودیت شبکه را بررسی کن. جزئیات: "+String(lastError||"خطای ناشناخته"));
+async function createPythonWorker(){
+ if(pyWorker)return pyWorker;
+ const worker=new Worker(new URL("./pyodide-worker.js",location.href));
+ pyWorker=worker;
+ worker.onmessage=(event)=>{
+   const m=event.data||{},status=document.getElementById("runtimeStatus"),out=document.getElementById("output");
+   if(m.type==="progress"){status.textContent=m.message;return}
+   if(m.type==="ready"){
+     status.textContent="موتور Python "+m.version+" آماده است.";
+     if(pyReadyResolve){pyReadyResolve();pyReadyResolve=null;pyReadyReject=null}
+     return
    }
-   const code=document.getElementById("code").value;
-   pyodide.runPython("import sys, io\n__pythonbaz_out = io.StringIO()\nsys.stdout = __pythonbaz_out");
-   try{
-     pyodide.runPython(code);
-     out.textContent=pyodide.runPython("__pythonbaz_out.getvalue()")||"(کد اجرا شد؛ خروجی چاپی ندارد.)";
-     status.textContent="اجرا تمام شد.";
-     if(!data.completedProjects.includes(0) && /secret|guess|coins|choice|score/.test(code)){
-       data.completedProjects.push(0);data.points+=10;persist();renderScores();
-       status.textContent="اجرا تمام شد؛ ۱۰ XP برای تمرین کدنویسی دریافت کردی!";
-     }
-   }catch(e){
-     out.textContent=String(e);
-     status.textContent="کد اجرا شد اما خطای پایتون دارد؛ از راهنمای فارسی کمک بگیر.";
+   if(m.type==="init-error"){
+     if(pyReadyReject){pyReadyReject(new Error(m.error));pyReadyResolve=null;pyReadyReject=null}
+     status.textContent="بارگیری موتور ناموفق بود.";
+     out.textContent=m.error;
+     return
    }
- }catch(e){
-   out.textContent=String(e);
-   status.textContent="موتور پایتون بارگیری نشد. نشانی‌های CDN یا اتصال شبکه را بررسی کن.";
- }finally{btn.disabled=false}
+   if(m.type==="result"){
+     if(m.id!==labRunId)return;
+     if(labRunTimeout){clearTimeout(labRunTimeout);labRunTimeout=null}
+     labRunBusy=false;
+     document.getElementById("runBtn").disabled=false;
+     document.getElementById("stopBtn").disabled=true;
+     const result=[m.stdout||"",m.stderr||"",m.error?("\n"+m.error):""].filter(Boolean).join("\n");
+     out.textContent=result||"(کد اجرا شد؛ خروجی چاپی ندارد.)";
+     document.getElementById("runtimeStatus").textContent=m.error?"اجرا با خطای پایتون پایان یافت.":"اجرا تمام شد.";
+   }
+ };
+ worker.onerror=(event)=>{
+   const error=new Error(event.message||"خطای Worker");
+   if(pyReadyReject){pyReadyReject(error);pyReadyResolve=null;pyReadyReject=null}
+   if(labRunBusy){labRunBusy=false;document.getElementById("runBtn").disabled=false;document.getElementById("stopBtn").disabled=true}
+   document.getElementById("runtimeStatus").textContent="خطای موتور: "+error.message;
+   document.getElementById("output").textContent=error.message;
+   terminatePythonWorker();
+ };
+ return worker;
 }
-function resetCode(){document.getElementById("code").value='name = "کدنویس"\nprint("سلام", name)\nfor number in range(1, 4):\n    print("مرحله", number)';document.getElementById("output").textContent="خروجی اینجا نمایش داده می‌شود."}
-function loadChallenge(){document.getElementById("code").value='name = input("نامت چیست؟ ")\\nprint("سلام", name)\\nfor number in range(1, 6):\\n    print(number)'.replace(/\\n/g,"\n");showPage("lab")}
+function ensurePythonWorker(){
+ if(pyWorkerReady)return pyWorkerReady;
+ const worker=createPythonWorker();
+ pyWorkerReady=new Promise((resolve,reject)=>{pyReadyResolve=resolve;pyReadyReject=reject;worker.postMessage({type:"init"})});
+ return pyWorkerReady;
+}
+function terminatePythonWorker(){
+ if(labRunTimeout){clearTimeout(labRunTimeout);labRunTimeout=null}
+ if(pyWorker){pyWorker.terminate();pyWorker=null}
+ pyWorkerReady=null;pyReadyResolve=null;pyReadyReject=null;
+}
+async function runCode(){
+ if(labRunBusy)return;
+ const out=document.getElementById("output"),status=document.getElementById("runtimeStatus"),btn=document.getElementById("runBtn"),stop=document.getElementById("stopBtn");
+ const code=document.getElementById("code").value;
+ if(!code.trim()){out.textContent="کد خالی است.";return}
+ labRunBusy=true;labRunId++;const id=labRunId;
+ btn.disabled=true;stop.disabled=false;out.textContent="در حال آماده‌سازی موتور…";status.textContent="در حال بارگیری/آماده‌سازی Python…";
+ try{
+   await ensurePythonWorker();
+   if(id!==labRunId||!labRunBusy)return;
+   status.textContent="در حال اجرای کد در Worker…";
+   createPythonWorker().postMessage({type:"run",id,code,inputs:document.getElementById("inputLines").value});
+   const seconds=Number(document.getElementById("labTimeout").value||15);
+   labRunTimeout=setTimeout(()=>{
+     if(id!==labRunId)return;
+     terminatePythonWorker();labRunBusy=false;btn.disabled=false;stop.disabled=true;
+     out.textContent="⏱️ زمان اجرا تمام شد؛ Worker برای جلوگیری از قفل‌شدن صفحه متوقف شد.";
+     status.textContent="اجرای کد از حد "+seconds+" ثانیه گذشت. اگر لازم است، حد زمان را افزایش بده.";
+   },seconds*1000);
+ }catch(error){
+   labRunBusy=false;btn.disabled=false;stop.disabled=true;terminatePythonWorker();
+   out.textContent=String(error);status.textContent="موتور پایتون بارگیری نشد؛ اتصال یا دسترسی CDN را بررسی کن.";
+ }
+}
+function stopCode(){
+ if(!labRunBusy)return;
+ labRunId++;terminatePythonWorker();labRunBusy=false;
+ document.getElementById("runBtn").disabled=false;document.getElementById("stopBtn").disabled=true;
+ document.getElementById("output").textContent="■ اجرای برنامه به‌صورت فوری متوقف شد.";
+ document.getElementById("runtimeStatus").textContent="Worker متوقف شد؛ برای اجرای بعدی دوباره بارگیری می‌شود.";
+}
+function resetCode(){
+ document.getElementById("code").value='name = "کدنویس"\nprint("سلام", name)\nfor number in range(1, 4):\n    print("مرحله", number)';
+ document.getElementById("inputLines").value="کدنویس";
+ saveLabDraft();clearLabOutput();
+}
+function clearLabOutput(){document.getElementById("output").textContent="خروجی اینجا نمایش داده می‌شود."}
+async function retryPythonEngine(){
+ terminatePythonWorker();document.getElementById("runtimeStatus").textContent="در حال بارگیری دوباره موتور…";
+ try{await ensurePythonWorker();document.getElementById("runtimeStatus").textContent="موتور پایتون آماده است."}
+ catch(error){terminatePythonWorker();document.getElementById("runtimeStatus").textContent="بارگیری ناموفق: "+String(error)}
+}
+function saveLabDraft(){
+ try{localStorage.setItem("pythonbaz_lab_code",document.getElementById("code").value);localStorage.setItem("pythonbaz_lab_inputs",document.getElementById("inputLines").value)}
+ catch(_){document.getElementById("runtimeStatus").textContent="فضای ذخیره مرورگر پر است؛ کد در این نشست باقی می‌ماند."}
+}
+function initLabDraft(){
+ const code=document.getElementById("code"),inputs=document.getElementById("inputLines");
+ try{const savedCode=localStorage.getItem("pythonbaz_lab_code"),savedInputs=localStorage.getItem("pythonbaz_lab_inputs");if(savedCode!==null)code.value=savedCode;if(savedInputs!==null)inputs.value=savedInputs}catch(_){}
+ code.addEventListener("input",saveLabDraft);inputs.addEventListener("input",saveLabDraft);
+ if("serviceWorker"in navigator && location.protocol!=="file:"){navigator.serviceWorker.register("./pythonbaz-sw.js").catch(()=>{})}
+}
+function loadChallenge(){document.getElementById("code").value='name = input("نامت چیست؟ ")\\nprint("سلام", name)\\nfor number in range(1, 6):\\n    print(number)'.replace(/\\n/g,"\n");document.getElementById("inputLines").value="کدنویس";saveLabDraft();showPage("lab")}
 function loadBrokenExample(){document.getElementById("code").value='if True\\n    print("سلام")';showPage("lab")}
 function showError(){let k=document.getElementById("errorSelect").value,e=errorHelp[k];document.getElementById("errorInfo").innerHTML=`<b>${k}</b><p>${e[0]}</p><p><b>راه‌حل:</b> ${e[1]}</p><p><b>نمونه درست:</b></p><pre>${escapeHtml(e[2].replace(/\\n/g,"\n"))}</pre><button class="secondary" onclick="document.getElementById('code').value=${JSON.stringify(e[2].replace(/\\n/g,"\n"))};showPage('lab')">فرستادن نمونه به آزمایشگاه</button>`}
 const badgeData=[
@@ -171,4 +258,5 @@ function exportProgress(){let blob=new Blob([JSON.stringify(data,null,2)],{type:
 function importProgress(){try{let v=JSON.parse(document.getElementById("importData").value);if(!v||!Array.isArray(v.done)||typeof v.points!=="number")throw Error("ساختار فایل درست نیست");data={...fresh(),...v};persist();renderScores();alert("پیشرفت بازیابی شد.")}catch(e){alert("فایل معتبر نیست؛ یک خروجی پیشرفت پایتون‌باز وارد کن.")}}
 function resetProgress(){if(!confirm("همه پیشرفت ذخیره‌شده این برنامه پاک شود؟"))return;data=fresh();persist();location.reload()}
 init();
+initLabDraft();
 </script></body></html>
