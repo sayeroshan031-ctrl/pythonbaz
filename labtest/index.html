@@ -143,7 +143,7 @@ function nextQuestion(){if(!qAnswered){document.getElementById("quizFeedback").i
 function restartQuiz(){qIndex=0;qScore=0;quizFinished=false;renderQuestion()}
 function createPythonWorker(){
  if(pyWorker)return pyWorker;
- const worker=new Worker(new URL("./pyodide-worker.js",location.href));
+ const worker=new Worker(new URL("./pyodide-worker.js?v=3",location.href));
  pyWorker=worker;
  worker.onmessage=(event)=>{
    const m=event.data||{},status=document.getElementById("runtimeStatus"),out=document.getElementById("output");
