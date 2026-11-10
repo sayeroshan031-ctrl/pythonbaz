@@ -136,7 +136,7 @@ function renderQuestion(){qAnswered=false;let q=quizData[qIndex];document.getEle
 function chooseAnswer(i){if(qAnswered||quizFinished)return;qAnswered=true;let q=quizData[qIndex],ok=i===q.c;if(ok)qScore++;document.querySelectorAll(".choice").forEach((b,j)=>{b.disabled=true;if(j===q.c)b.style.background="#dff8e9";else if(j===i)b.style.background="#ffe5e1"});document.getElementById("quizFeedback").innerHTML=`<div class="${ok?"success":"error"}">${ok?"درست بود! آفرین.":"این پاسخ درست نیست."} ${q.why}</div>`}
 function nextQuestion(){if(!qAnswered){document.getElementById("quizFeedback").innerHTML='<div class="error">برای ادامه، یک پاسخ انتخاب کن.</div>';return}if(qIndex<quizData.length-1){qIndex++;renderQuestion();return}quizFinished=true;let pct=Math.round(qScore/quizData.length*100);data.best=Math.max(data.best,pct);data.points+=qScore*5;persist();document.getElementById("quizArea").innerHTML=`<h2>نتیجه: ${pct}٪</h2><p>از ${quizData.length} سؤال، ${qScore} پاسخ درست داشتی.</p><p>${pct>=85?"عالی! آماده مأموریت بعدی هستی.":pct>=55?"خوب بود؛ فلش‌کارت‌ها را مرور کن و دوباره تلاش کن.":"اشکالی ندارد؛ درس‌ها را دوباره مرور کن."}</p>`;document.getElementById("nextQ").disabled=true;document.getElementById("nextQ").textContent="آزمون تمام شد";renderScores()}
 function restartQuiz(){qIndex=0;qScore=0;quizFinished=false;renderQuestion()}
-async function createPythonWorker(){
+function createPythonWorker(){
  if(pyWorker)return pyWorker;
  const worker=new Worker(new URL("./pyodide-worker.js",location.href));
  pyWorker=worker;
