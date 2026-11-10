@@ -44,7 +44,9 @@ self.onmessage = async (event) => {
   let stderr = "";
   try {
     const py = await initialize();
-    const lines = String(message.inputs || "").replace(/\r/g, "").split("\n");
+    const rawInputs = String(message.inputs || "").replace(/\r/g, "");
+    const lines = rawInputs === "" ? [] : rawInputs.split("\n");
+    if (lines.length && lines[lines.length - 1] === "") lines.pop();
     let inputIndex = 0;
     py.setStdout({ batched: (text) => { stdout += text; } });
     py.setStderr({ batched: (text) => { stderr += text; } });

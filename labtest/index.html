@@ -201,7 +201,10 @@ async function runCode(){
  if(!code.trim()){out.textContent="کد خالی است.";return}
  labRunBusy=true;labRunId++;const id=labRunId;
  btn.disabled=true;stop.disabled=false;out.textContent="در حال آماده‌سازی موتور…";status.textContent="در حال بارگیری/آماده‌سازی Python…";
- labSession={code:code,prefilled:document.getElementById("inputLines").value.replace(/\r/g,"").split("\n"),typed:[],transcript:"",prevStdout:"",prompts:0};
+ const rawPrefilled=document.getElementById("inputLines").value.replace(/\r/g,"");
+ const prefilledLines=rawPrefilled===""?[]:rawPrefilled.split("\n");
+ if(prefilledLines.length&&prefilledLines[prefilledLines.length-1]==="")prefilledLines.pop();
+ labSession={code:code,prefilled:prefilledLines,typed:[],transcript:"",prevStdout:"",prompts:0,awaiting:false};
  hideConsoleInput();
  try{
    await ensurePythonWorker();
@@ -215,6 +218,7 @@ async function runCode(){
 function dispatchSessionRun(id){
  const out=document.getElementById("output"),status=document.getElementById("runtimeStatus"),btn=document.getElementById("runBtn"),stop=document.getElementById("stopBtn");
  status.textContent="در حال اجرای کد در Worker…";
+ labSession.awaiting=true;
  const inputs=labSession.prefilled.concat(labSession.typed).join("\n");
  createPythonWorker().postMessage({type:"run",id:id,code:labSession.code,inputs:inputs});
  const seconds=Number(document.getElementById("labTimeout").value||15);
@@ -227,6 +231,7 @@ function dispatchSessionRun(id){
 }
 function handleSessionResult(m){
  if(labRunTimeout){clearTimeout(labRunTimeout);labRunTimeout=null}
+ labSession.awaiting=false;
  const out=document.getElementById("output"),status=document.getElementById("runtimeStatus");
  const stdout=m.stdout||"";
  let segment;
@@ -266,9 +271,10 @@ function hideConsoleInput(){
  const row=document.getElementById("consoleInputRow");if(row)row.style.display="none";
 }
 function submitConsoleInput(){
- if(!labSession)return;
+ if(!labSession||labSession.awaiting)return;
  const input=document.getElementById("consoleInput");
  const line=input.value;
+ input.value="";
  labSession.typed.push(line);
  labSession.prompts++;
  labSession.transcript+=line+"\n";
