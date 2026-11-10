@@ -44,10 +44,14 @@ self.onmessage = async (event) => {
   let stderr = "";
   try {
     const py = await initialize();
-    const lines = String(message.inputs || "").replace(/\r/g, "").split("\n");
+    const rawInputs = String(message.inputs || "").replace(/\r/g, "");
+    const lines = rawInputs === "" ? [] : rawInputs.split("\n");
+    if (lines.length && lines[lines.length - 1] === "") lines.pop();
     let inputIndex = 0;
-    py.setStdout({ batched: (text) => { stdout += text; } });
-    py.setStderr({ batched: (text) => { stderr += text; } });
+    const stdoutDecoder = new TextDecoder("utf-8");
+    const stderrDecoder = new TextDecoder("utf-8");
+    py.setStdout({ raw: (byte) => { stdout += stdoutDecoder.decode(new Uint8Array([byte]), { stream: true }); } });
+    py.setStderr({ raw: (byte) => { stderr += stderrDecoder.decode(new Uint8Array([byte]), { stream: true }); } });
     py.setStdin({ stdin: () => inputIndex < lines.length ? lines[inputIndex++] : null });
     await py.runPythonAsync(String(message.code || ""));
     self.postMessage({ type: "result", id, stdout, stderr, error: null });

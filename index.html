@@ -56,8 +56,13 @@ for number in range(1, 4):
     print("مرحله", number)</textarea>
 <label class="small" for="inputLines"><b>ورودی برنامه (برای input؛ هر پاسخ در یک خط)</b></label>
 <textarea id="inputLines" rows="3" style="min-height:80px" spellcheck="false" placeholder="مثلاً:&#10;سارا&#10;۱۶">کدنویس</textarea>
-<p class="muted small">برای کدهایی که از <code>input()</code> استفاده می‌کنند، پاسخ‌ها را پیش از اجرا اینجا وارد کن. ورودی زنده و سؤال‌به‌سؤال هنوز پشتیبانی نمی‌شود.</p>
+<p class="muted small">پاسخ‌های ازپیش‌آماده را می‌توانی اینجا بنویسی؛ اگر برنامه سؤال بیشتری بپرسد، کادر پاسخ زنده زیر خروجی باز می‌شود و همان‌جا جواب می‌دهی.</p>
 <h3>خروجی / خطا</h3><pre id="output">خروجی اینجا نمایش داده می‌شود.</pre>
+<div id="consoleInputRow" style="display:none;gap:8px;align-items:center;margin:10px 0">
+<input id="consoleInput" type="text" placeholder="پاسخ را اینجا بنویس و Enter بزن…" style="flex:1;padding:10px;border-radius:10px" autocomplete="off" onkeydown="if(event.key==='Enter'){event.preventDefault();submitConsoleInput()}">
+<button class="primary" type="button" onclick="submitConsoleInput()">ثبت پاسخ ⏎</button>
+<button class="secondary" type="button" onclick="consoleInputEOF()">پایان ورودی</button>
+</div>
 <p class="muted small" id="runtimeStatus" role="status">موتور پایتون هنوز بارگیری نشده است. اولین اجرای آزمایشگاه به اینترنت نیاز دارد.</p>
 </div>
 <div class="card s4">
@@ -138,7 +143,7 @@ function nextQuestion(){if(!qAnswered){document.getElementById("quizFeedback").i
 function restartQuiz(){qIndex=0;qScore=0;quizFinished=false;renderQuestion()}
 function createPythonWorker(){
  if(pyWorker)return pyWorker;
- const worker=new Worker(new URL("./pyodide-worker.js",location.href));
+ const worker=new Worker(new URL("./pyodide-worker.js?v=3",location.href));
  pyWorker=worker;
  worker.onmessage=(event)=>{
    const m=event.data||{},status=document.getElementById("runtimeStatus"),out=document.getElementById("output");
@@ -156,6 +161,7 @@ function createPythonWorker(){
    }
    if(m.type==="result"){
      if(m.id!==labRunId)return;
+     if(labSession){handleSessionResult(m);return}
      if(labRunTimeout){clearTimeout(labRunTimeout);labRunTimeout=null}
      labRunBusy=false;
      document.getElementById("runBtn").disabled=false;
@@ -171,6 +177,7 @@ function createPythonWorker(){
    if(labRunBusy){labRunBusy=false;document.getElementById("runBtn").disabled=false;document.getElementById("stopBtn").disabled=true}
    document.getElementById("runtimeStatus").textContent="خطای موتور: "+error.message;
    document.getElementById("output").textContent=error.message;
+   labSession=null;hideConsoleInput();
    terminatePythonWorker();
  };
  return worker;
@@ -186,6 +193,7 @@ function terminatePythonWorker(){
  if(pyWorker){pyWorker.terminate();pyWorker=null}
  pyWorkerReady=null;pyReadyResolve=null;pyReadyReject=null;
 }
+let labSession=null;
 async function runCode(){
  if(labRunBusy)return;
  const out=document.getElementById("output"),status=document.getElementById("runtimeStatus"),btn=document.getElementById("runBtn"),stop=document.getElementById("stopBtn");
@@ -193,26 +201,99 @@ async function runCode(){
  if(!code.trim()){out.textContent="کد خالی است.";return}
  labRunBusy=true;labRunId++;const id=labRunId;
  btn.disabled=true;stop.disabled=false;out.textContent="در حال آماده‌سازی موتور…";status.textContent="در حال بارگیری/آماده‌سازی Python…";
+ const rawPrefilled=document.getElementById("inputLines").value.replace(/\r/g,"");
+ const prefilledLines=rawPrefilled===""?[]:rawPrefilled.split("\n");
+ if(prefilledLines.length&&prefilledLines[prefilledLines.length-1]==="")prefilledLines.pop();
+ labSession={code:code,prefilled:prefilledLines,typed:[],transcript:"",prevStdout:"",prompts:0,awaiting:false};
+ hideConsoleInput();
  try{
    await ensurePythonWorker();
    if(id!==labRunId||!labRunBusy)return;
-   status.textContent="در حال اجرای کد در Worker…";
-   createPythonWorker().postMessage({type:"run",id,code,inputs:document.getElementById("inputLines").value});
-   const seconds=Number(document.getElementById("labTimeout").value||15);
-   labRunTimeout=setTimeout(()=>{
-     if(id!==labRunId)return;
-     terminatePythonWorker();labRunBusy=false;btn.disabled=false;stop.disabled=true;
-     out.textContent="⏱️ زمان اجرا تمام شد؛ Worker برای جلوگیری از قفل‌شدن صفحه متوقف شد.";
-     status.textContent="اجرای کد از حد "+seconds+" ثانیه گذشت. اگر لازم است، حد زمان را افزایش بده.";
-   },seconds*1000);
+   dispatchSessionRun(id);
  }catch(error){
-   labRunBusy=false;btn.disabled=false;stop.disabled=true;terminatePythonWorker();
+   labRunBusy=false;btn.disabled=false;stop.disabled=true;terminatePythonWorker();labSession=null;hideConsoleInput();
    out.textContent=String(error);status.textContent="موتور پایتون بارگیری نشد؛ اتصال یا دسترسی CDN را بررسی کن.";
  }
 }
+function dispatchSessionRun(id){
+ const out=document.getElementById("output"),status=document.getElementById("runtimeStatus"),btn=document.getElementById("runBtn"),stop=document.getElementById("stopBtn");
+ status.textContent="در حال اجرای کد در Worker…";
+ labSession.awaiting=true;
+ const inputs=labSession.prefilled.concat(labSession.typed).join("\n");
+ createPythonWorker().postMessage({type:"run",id:id,code:labSession.code,inputs:inputs});
+ const seconds=Number(document.getElementById("labTimeout").value||15);
+ labRunTimeout=setTimeout(()=>{
+   if(id!==labRunId)return;
+   terminatePythonWorker();labRunBusy=false;btn.disabled=false;stop.disabled=true;labSession=null;hideConsoleInput();
+   out.textContent="⏱️ زمان اجرا تمام شد؛ Worker برای جلوگیری از قفل‌شدن صفحه متوقف شد.";
+   status.textContent="اجرای کد از حد "+seconds+" ثانیه گذشت. اگر لازم است، حد زمان را افزایش بده.";
+ },seconds*1000);
+}
+function handleSessionResult(m){
+ if(labRunTimeout){clearTimeout(labRunTimeout);labRunTimeout=null}
+ labSession.awaiting=false;
+ const out=document.getElementById("output"),status=document.getElementById("runtimeStatus");
+ const stdout=m.stdout||"";
+ let segment;
+ if(stdout.indexOf(labSession.prevStdout)===0){segment=stdout.slice(labSession.prevStdout.length)}
+ else{segment=stdout;labSession.transcript=""}
+ labSession.transcript+=segment;
+ const starved=!!(m.error&&String(m.error).indexOf("EOFError")>=0);
+ if(starved&&labSession.prompts<50){
+   labSession.prevStdout=stdout;
+   out.textContent=labSession.transcript;
+   status.textContent="برنامه منتظر پاسخ توست؛ در کادر زیر خروجی بنویس و Enter بزن.";
+   showConsoleInput();
+   document.getElementById("runBtn").disabled=true;
+   document.getElementById("stopBtn").disabled=false;
+   return;
+ }
+ let finalText=labSession.transcript;
+ const extra=[m.stderr||"",m.error?("\n"+m.error):""].filter(Boolean).join("\n");
+ if(extra){finalText+=(finalText&&finalText.slice(-1)!=="\n"?"\n":"")+extra}
+ out.textContent=finalText||"(کد اجرا شد؛ خروجی چاپی ندارد.)";
+ status.textContent=m.error?"اجرا با خطای پایتون پایان یافت.":"اجرا تمام شد.";
+ endLabSession();
+}
+function endLabSession(){
+ labSession=null;labRunBusy=false;
+ document.getElementById("runBtn").disabled=false;
+ document.getElementById("stopBtn").disabled=true;
+ hideConsoleInput();
+}
+function showConsoleInput(){
+ const row=document.getElementById("consoleInputRow");if(!row)return;
+ row.style.display="flex";
+ const input=document.getElementById("consoleInput");input.value="";
+ setTimeout(()=>{try{input.focus()}catch(_){}},60);
+}
+function hideConsoleInput(){
+ const row=document.getElementById("consoleInputRow");if(row)row.style.display="none";
+}
+function submitConsoleInput(){
+ if(!labSession||labSession.awaiting)return;
+ const input=document.getElementById("consoleInput");
+ const line=input.value;
+ input.value="";
+ labSession.typed.push(line);
+ labSession.prompts++;
+ labSession.transcript+=line+"\n";
+ document.getElementById("output").textContent=labSession.transcript;
+ hideConsoleInput();
+ labRunId++;const id=labRunId;
+ document.getElementById("runtimeStatus").textContent="در حال ادامهٔ اجرا…";
+ dispatchSessionRun(id);
+}
+function consoleInputEOF(){
+ if(!labSession)return;
+ const out=document.getElementById("output");
+ out.textContent=labSession.transcript+"\nEOFError: EOF when reading a line";
+ document.getElementById("runtimeStatus").textContent="ورودی پایان یافت؛ برنامه متوقف شد.";
+ endLabSession();
+}
 function stopCode(){
  if(!labRunBusy)return;
- labRunId++;terminatePythonWorker();labRunBusy=false;
+ labRunId++;terminatePythonWorker();labRunBusy=false;labSession=null;hideConsoleInput();
  document.getElementById("runBtn").disabled=false;document.getElementById("stopBtn").disabled=true;
  document.getElementById("output").textContent="■ اجرای برنامه به‌صورت فوری متوقف شد.";
  document.getElementById("runtimeStatus").textContent="Worker متوقف شد؛ برای اجرای بعدی دوباره بارگیری می‌شود.";

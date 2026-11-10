@@ -6,7 +6,7 @@
 - A runaway loop can be stopped immediately; a per-run timeout also terminates the worker.
 - The runtime uses a pinned Pyodide 0.29.5 build with two CDN paths.
 - A service worker caches Pyodide assets after a successful download. Offline use is best-effort and depends on a successful first download and browser cache retention.
-- `input()` is supported through prefilled input lines (one answer per line). This avoids a blocking browser prompt in the Worker; interactive prompt-by-prompt input is not supported yet.
+- `input()` works two ways: prefilled input lines (one answer per line), and live prompt-by-prompt answers — when the prefilled lines run out, the run pauses, shows the prompt in the output and asks the user for the next answer inline in the console (implemented as a fast replay with the answers collected so far).
 - The lab code and stdin draft are saved locally in the current browser.
 - The existing Persian learning course, missions, flashcards, quiz, project examples, progress and score pages remain intact.
 
