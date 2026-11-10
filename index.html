@@ -1,7 +1,8 @@
 <!doctype html>
 <html lang="fa" dir="rtl">
+<!-- PythonBaz (پایتون‌باز) — © 2026 Mohammadreza Hosseinzadeh (محمدرضا حسین‌زاده). All rights reserved. -->
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="author" content="محمدرضا حسین‌زاده (Mohammadreza Hosseinzadeh)">
 <title>پایتون‌باز ۲ | مأموریت کدنویس</title>
 <style>
 :root{--bg:#f3f6fc;--card:#fff;--ink:#17233b;--muted:#68758d;--blue:#3e63dd;--cyan:#0e9d91;--line:#e1e7f1;--soft:#eef2ff;--gold:#f2b544;--green:#e5f8ee;--red:#fff0ee}
@@ -84,6 +85,7 @@ for number in range(1, 4):
 <section id="badges" class="page" hidden><div class="card"><h2>🏅 کلکسیون نشان‌ها</h2><p>نشان‌ها با انجام فعالیت‌ها باز می‌شوند.</p><div id="badgeGrid" class="badge-grid"></div></div></section>
 <section id="scores" class="page" hidden><div class="grid"><div class="card s6"><h2>🏆 جدول امتیازات این دستگاه</h2><p class="muted">این جدول محلی است و فقط امتیازهای ثبت‌شده در همین مرورگر را نشان می‌دهد؛ جدول آنلاین بین کاربران نیست.</p><div id="scoreTable"></div><div class="btnrow"><button class="secondary" onclick="saveScore()">ثبت رکورد فعلی</button><button class="secondary" onclick="exportProgress()">خروجی گرفتن از پیشرفت</button></div></div><div class="card s6"><h2>بازیابی پیشرفت</h2><p>اگر فایل خروجی پیشرفت را داری، آن را اینجا وارد کن.</p><textarea id="importData" style="min-height:110px" placeholder="محتوای فایل JSON را اینجا قرار بده"></textarea><div class="btnrow"><button class="primary" onclick="importProgress()">بازیابی اطلاعات</button><button class="secondary" onclick="resetProgress()">پاک کردن پیشرفت</button></div><p class="muted small">پاک کردن پیشرفت برگشت‌پذیر نیست مگر اینکه قبلاً خروجی گرفته باشی.</p></div></div></section>
 </main><footer>پایتون‌باز ۲ · یادگیری با تمرین، نه حفظ کردن</footer>
+<footer><div class="wrap"><p class="muted small" style="text-align:center;padding:20px 0 28px">سازنده و گردآورنده: <b>محمدرضا حسین‌زاده</b> — © ۲۰۲۶، تمامی حقوق محفوظ است.</p></div></footer>
 <script>
 const lessonData=[
 {title:"۱. پایتون و اولین برنامه",level:"مبتدی",story:"چراغ‌های شهر خاموش‌اند؛ اولین پیام را به ربات بفرست.",text:"پایتون زبانی خوانا برای ساخت ابزار، وب‌سایت و بازی است. دستور print() اطلاعات را نمایش می‌دهد.",code:'print("سلام کدنویس!")',why:"متن داخل کوتیشن چاپ می‌شود.",task:"متن «من برنامه‌نویس می‌شوم» را چاپ کن."},

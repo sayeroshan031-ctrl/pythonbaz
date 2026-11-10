@@ -1,4 +1,5 @@
 /* PythonBaz Lab worker — isolates Pyodide from the page UI. */
+/* © 2026 Mohammadreza Hosseinzadeh (محمدرضا حسین‌زاده). All rights reserved. */
 const VERSION = "0.29.5";
 const CDN = [
   { script: `https://cdn.jsdelivr.net/pyodide/v${VERSION}/full/pyodide.js`, base: `https://cdn.jsdelivr.net/pyodide/v${VERSION}/full/` },
