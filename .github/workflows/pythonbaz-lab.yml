@@ -22,5 +22,7 @@ jobs:
           node-version: "22"
       - name: Syntax check worker
         run: node --check pyodide-worker.js
+      - name: Syntax check service worker
+        run: node --check pythonbaz-sw.js
       - name: Run static tests
         run: node --test tests/*.test.mjs

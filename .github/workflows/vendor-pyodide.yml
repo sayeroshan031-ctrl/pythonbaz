@@ -1,0 +1,60 @@
+name: Vendor Pyodide (local copy of the Python engine)
+
+# Downloads the pinned Pyodide runtime from npm into vendor/pyodide/ so the lab
+# is served from this site itself (works without a VPN and, with the service
+# worker, offline). Runs automatically when this file lands on main, and can be
+# re-run by hand from the Actions tab (Run workflow).
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/vendor-pyodide.yml"
+
+permissions:
+  contents: write
+
+env:
+  PYODIDE_VERSION: "0.29.5"
+
+jobs:
+  vendor:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Download Pyodide from npm
+        run: |
+          set -euo pipefail
+          workdir="$(mktemp -d)"
+          (cd "$workdir" && npm pack "pyodide@${PYODIDE_VERSION}" --silent && tar -xzf pyodide-*.tgz)
+          rm -rf vendor/pyodide
+          mkdir -p vendor/pyodide
+          cp -r "$workdir"/package/. vendor/pyodide/
+          # Type definitions and the npm manifest are not needed in the browser.
+          find vendor/pyodide -name "*.d.ts" -delete
+          rm -f vendor/pyodide/package.json
+      - name: Verify the runtime files exist
+        run: |
+          set -euo pipefail
+          for f in pyodide.js pyodide.asm.js pyodide.asm.wasm python_stdlib.zip pyodide-lock.json; do
+            test -s "vendor/pyodide/$f" || { echo "missing vendor/pyodide/$f"; exit 1; }
+          done
+          du -sh vendor/pyodide
+          # GitHub rejects files over 100 MB.
+          if find vendor/pyodide -type f -size +95M | grep -q .; then echo "file too large"; exit 1; fi
+      - name: Commit the local copy
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add vendor/pyodide
+          if git diff --cached --quiet; then
+            echo "vendor/pyodide is already up to date"
+          else
+            git commit -m "chore: vendor Pyodide ${PYODIDE_VERSION} for offline / no-VPN use"
+            git push
+          fi

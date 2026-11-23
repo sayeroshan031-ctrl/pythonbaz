@@ -3,6 +3,7 @@
 <!-- PythonBaz (پایتون‌باز) — © 2026 Mohammadreza Hosseinzadeh (محمدرضا حسین‌زاده). All rights reserved. -->
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="author" content="محمدرضا حسین‌زاده (Mohammadreza Hosseinzadeh)">
+<link rel="manifest" href="./manifest.webmanifest"><link rel="icon" href="./icon.svg" type="image/svg+xml"><meta name="theme-color" content="#2639a9">
 <title>پایتون‌باز ۲ | مأموریت کدنویس</title>
 <style>
 :root{--bg:#f3f6fc;--card:#fff;--ink:#17233b;--muted:#68758d;--blue:#3e63dd;--cyan:#0e9d91;--line:#e1e7f1;--soft:#eef2ff;--gold:#f2b544;--green:#e5f8ee;--red:#fff0ee}
@@ -151,7 +152,7 @@ function createPythonWorker(){
    const m=event.data||{},status=document.getElementById("runtimeStatus"),out=document.getElementById("output");
    if(m.type==="progress"){status.textContent=m.message;return}
    if(m.type==="ready"){
-     status.textContent="موتور Python "+m.version+" آماده است.";
+     status.textContent="موتور Python "+m.version+" آماده است"+(m.source==="local"?" (از فایل‌های خود سایت؛ بدون نیاز به CDN و فیلترشکن، و بعد از این بار آفلاین هم کار می‌کند)":" (از CDN؛ برای دفعات بعد در مرورگر ذخیره می‌شود)")+".";
      if(pyReadyResolve){pyReadyResolve();pyReadyResolve=null;pyReadyReject=null}
      return
    }
@@ -206,7 +207,7 @@ async function runCode(){
  const rawPrefilled=document.getElementById("inputLines").value.replace(/\r/g,"");
  const prefilledLines=rawPrefilled===""?[]:rawPrefilled.split("\n");
  if(prefilledLines.length&&prefilledLines[prefilledLines.length-1]==="")prefilledLines.pop();
- labSession={code:code,prefilled:prefilledLines,typed:[],transcript:"",prevStdout:"",prompts:0,awaiting:false};
+ labSession={code:code,prefilled:prefilledLines,typed:[],transcript:"",prevStdout:"",prompts:0,awaiting:false,seed:Math.floor(Math.random()*2147483647)};
  hideConsoleInput();
  try{
    await ensurePythonWorker();
@@ -222,7 +223,7 @@ function dispatchSessionRun(id){
  status.textContent="در حال اجرای کد در Worker…";
  labSession.awaiting=true;
  const inputs=labSession.prefilled.concat(labSession.typed).join("\n");
- createPythonWorker().postMessage({type:"run",id:id,code:labSession.code,inputs:inputs});
+ createPythonWorker().postMessage({type:"run",id:id,code:labSession.code,inputs:inputs,seed:labSession.seed});
  const seconds=Number(document.getElementById("labTimeout").value||15);
  labRunTimeout=setTimeout(()=>{
    if(id!==labRunId)return;
@@ -240,7 +241,7 @@ function handleSessionResult(m){
  if(stdout.indexOf(labSession.prevStdout)===0){segment=stdout.slice(labSession.prevStdout.length)}
  else{segment=stdout;labSession.transcript=""}
  labSession.transcript+=segment;
- const starved=!!(m.error&&String(m.error).indexOf("EOFError")>=0);
+ const starved=!!m.starved||!!(m.error&&String(m.error).indexOf("EOFError")>=0);
  if(starved&&labSession.prompts<50){
    labSession.prevStdout=stdout;
    out.textContent=labSession.transcript;
