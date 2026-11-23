@@ -1,0 +1,15 @@
+{
+  "name": "پایتون‌باز ۲ | مأموریت کدنویس",
+  "short_name": "پایتون‌باز",
+  "description": "آموزش تعاملی پایتون برای نوجوانان؛ آزمایشگاه کد بدون نیاز به اینترنت پس از اولین بارگیری",
+  "lang": "fa",
+  "dir": "rtl",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f3f6fc",
+  "theme_color": "#2639a9",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}
