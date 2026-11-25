@@ -335,7 +335,7 @@ const badgeData=[
 ["points","⭐","ستاره کدنویسی","۱۰۰ XP جمع کن",()=>data.points>=100]
 ];
 function earnedBadges(){return badgeData.filter(b=>b[4]())}
-function renderBadges(){let el=document.getElementById("badgeGrid");if(!el)return;el.innerHTML=badgeData.map(b=>`<div class="badge ${b[4()]?"":"locked"}"><b>${b[1]}</b><strong>${b[2]}</strong><div class="small">${b[3]}</div><span class="pill">${b[4()]?"باز شده ✓":"قفل است"}</span></div>`).join("")}
+function renderBadges(){let el=document.getElementById("badgeGrid");if(!el)return;el.innerHTML=badgeData.map(b=>`<div class="badge ${b[4]()?"":"locked"}"><b>${b[1]}</b><strong>${b[2]}</strong><div class="small">${b[3]}</div><span class="pill">${b[4]()?"باز شده ✓":"قفل است"}</span></div>`).join("")}
 function saveScore(){data.scores.push({name:data.name,points:data.points,date:new Date().toLocaleDateString("fa-IR")});data.scores.sort((a,b)=>b.points-a.points);data.scores=data.scores.slice(0,10);persist();renderScores()}
 function renderScores(){let el=document.getElementById("scoreTable");if(!el)return;let scores=[...data.scores];if(!scores.some(s=>s.name===data.name&&s.points===data.points))scores.push({name:data.name,points:data.points,date:"فعلی"});scores.sort((a,b)=>b.points-a.points);el.innerHTML=scores.slice(0,10).map((s,i)=>`<div class="lesson"><b>${i+1}. ${escapeHtml(s.name)}</b><span>${s.points} XP <small class="muted">${s.date}</small></span></div>`).join("")||"هنوز رکوردی ثبت نشده است."}
 function exportProgress(){let blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"}),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="pythonbaz-progress.json";a.click();URL.revokeObjectURL(url)}
